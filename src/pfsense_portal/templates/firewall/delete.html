@@ -1,0 +1,22 @@
+{% extends 'template.html' %}
+
+{% load static %}
+
+{% block customheaders %}
+{% endblock %}
+
+{% block pagetitle %} Remover Firewall {% endblock %}
+
+{% block content %}
+
+{% if submitted %}
+<p class="suceess">
+    Firewall {{ firewall.name }} removido com sucesso!
+</p>
+{% else %}
+
+{% endif %}
+{% endblock %}
+
+{% block customscripts %}
+{% endblock %}

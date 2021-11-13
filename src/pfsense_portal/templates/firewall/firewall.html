@@ -1,0 +1,55 @@
+{% extends 'template.html' %}
+
+{% load static %}
+
+{% block customheaders %}
+{% endblock %}
+
+{% block pagetitle %} Firewalls cadastrados {% endblock %}
+
+{% block content %}
+<h3>Opções de Firewall</h3>
+<a class="btn btn-sm btn-primary" href="/firewall/add/">Novo</a>
+<br>
+<br>
+<h3>Firewalls Cadastrados</h3>
+<table id="table-list-firewall" class="table table-sm border">
+    <thead class="table-dark">
+        <tr>
+            <th>Nome</th>
+            <th>Url</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for firewall in firewalls %}
+        <tr>
+            <td>{{ firewall.name }}</td>
+            <td>{{ firewall.url }}</td>
+            <td>Ok</td>
+           <!--<td><a href=''>Gerenciar</a> || <a href='{{ firewall.url }}' target="_blank">Acessar</a></td>-->
+            <td>
+                <a href='/firewall/{{firewall.id}}/manage'><i class="far fa-arrow-alt-circle-right" title="Gerenciar"></i></a> 
+                <a href='/firewall/{{firewall.id}}/edit' target="_blank"><i class="far fa-edit" title="Editar"></i></a>
+                <a href='/firewall/{{firewall.id}}/delete' ><i class="fas fa-trash-alt" title="Remover"></i></a>
+
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Nenhum resultado encontrado...</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+    document.addEventListener("DOMContentLoaded", ()=>{
+        // $("#table-list-firewall").DataTable({
+        //     searching: false,
+        //     lengthChange: false
+        // });
+    });
+</script>
+{% endblock %}
+
+{% block customscripts %}
+{% endblock %}

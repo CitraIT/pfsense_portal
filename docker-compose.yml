@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  web:
+    build: web
+    container_name: portalfw_naturederme
+    image: portalfw
+    # command: sh -c "python3 manage.py runserver 0.0.0.0:80"
+    restart: always
+    ports:
+      - 8000:80
+    environment:
+      # - DEBUG=1
+      # - DATABASE_USER=portalfw_naturederme
+      # - DATABASE_PASSWORD=N4tur3Derm3
+      # - DATABASE_HOST=172.17.0.1
+      # - DATABASE_PORT=5432
+      # - DATABASE_NAME=grs_naturederme
+    # volumes:
+    #   - app_data:/app
+
+
+
+  # proxy:
+  #   build: proxy
+  #   container_name: proxy
+  #   restart: always
+  #   ports:
+  #     - 8000:80
+  #   volumes:
+  #     - app_data:/vol/app
+  #   links:
+  #     - web
+
+# volumes:
+#   app_data:
