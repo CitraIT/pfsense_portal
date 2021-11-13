@@ -1,9 +1,11 @@
 #!/bin/bash
-
 set -e
 
 # Starting cron
 /usr/sbin/cron
+
+# Creating needed directories
+mkdir -p /app/files/backup
 
 
 # python3 manage.py collectstatic --noinput
