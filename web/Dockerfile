@@ -66,5 +66,5 @@ EXPOSE 80
 VOLUME /app
 
 # Default Entrypoint
-chmod +x /scripts/entrypoint.sh
+RUN chmod +x /scripts/entrypoint.sh
 CMD ["/scripts/entrypoint.sh"]
