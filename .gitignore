@@ -1,9 +1,9 @@
 # sqlite database
-web/src/pfsense_portal/db.sqlite3
+/web/src/pfsense_portal/db.sqlite3
 
 
 # user files
-web/src/pfsense_portal/files/backup/
+/web/src/pfsense_portal/files/backup/*
 
 
 #  python cache
@@ -11,5 +11,5 @@ __pycache__/
 
 
 # virtual env
-web/src/venv/
+/web/src/venv/*
 
