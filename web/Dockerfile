@@ -64,4 +64,7 @@ EXPOSE 80
 # ENTRYPOINT [ "gunicorn", "--workers=5", "--threads=2", "--worker-class=gthread","--bind", "0.0.0.0:80", "--worker-tmp-dir","/dev/shm", "core.wsgi"]
 #ENTRYPOINT [ "python3.8", "app.py"]
 VOLUME /app
+
+# Default Entrypoint
+chmod +x /scripts/entrypoint.sh
 CMD ["/scripts/entrypoint.sh"]
