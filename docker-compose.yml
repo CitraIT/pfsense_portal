@@ -3,14 +3,14 @@ version: '3'
 services:
   web:
     build: web
-    container_name: portalfw_naturederme
-    image: portalfw
+    container_name: pfsense_portal_nd
+    image: portalfw:development
     # command: sh -c "python3 manage.py runserver 0.0.0.0:80"
     restart: always
     ports:
-      - 8000:80
+      - 8003:80
     environment:
-      # - DEBUG=1
+      - DEBUG=1
       # - DATABASE_USER=portalfw_naturederme
       # - DATABASE_PASSWORD=N4tur3Derm3
       # - DATABASE_HOST=172.17.0.1
