@@ -1,0 +1,71 @@
+stages:
+  - test
+  - homolog
+  - deploy
+
+
+test:
+  stage: test
+  image: gitlab/dind:latest
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo '\0 We entered TEST phase 0/'
+    - docker-compose down
+    - sleep 5s
+    - docker-compose build web
+    - docker-compose down
+
+homolog:
+  stage: homolog
+  image: gitlab/dind:latest
+  before_script:
+    - echo '\0/ We entered HOMOLOG phase \0/'
+    - mkdir ~/.ssh
+    - chmod 700 ~/.ssh
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-keyscan -p 20022 ctbhdc.ddns.net > ~/.ssh/known_hosts
+    - echo "$RSA_KEY_CITRAITLAB01_DEPLOY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - 'if [ $(ssh -T -p20022 citra@ctbhdc.ddns.net hostname) == "citrabhgitlab" ];then echo "sucesso con SSH";else echo "erro con SSH"; exit 1; fi'
+    - curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - chmod +x /usr/local/bin/docker-compose
+    - ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+  script:
+    - docker-compose build web
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker-compose push web
+    - export DOCKER_HOST=ssh://citra@ctbhdc.ddns.net:20022
+    - docker-compose pull web
+    - docker-compose down
+    - docker-compose up -d
+  only:
+    - main
+
+production:
+  stage: deploy
+  image: gitlab/dind:latest
+  before_script:
+    - echo '\0/ We entered PRODUCTION phase \0/'
+    - mkdir ~/.ssh
+    - chmod 700 ~/.ssh
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - ssh-keyscan -p 1222 ctbhdc.ddns.net > ~/.ssh/known_hosts
+    - echo "$RSA_KEY_CITRAITLAB01_PROD" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - 'if [ $(ssh -T -p1222 citra@ctbhdc.ddns.net hostname) == "citrabhapp01" ];then echo "sucesso conectando no SSH";else echo "erro conectando no SSH"; exit 1; fi'
+    - curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - chmod +x /usr/local/bin/docker-compose
+    - ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+  script:
+    - docker-compose build web
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker-compose push web
+    - export DOCKER_HOST=ssh://citra@ctbhdc.ddns.net:1222
+    - docker-compose pull web
+    - docker-compose down
+    - docker-compose up -d
+  only:
+    - main

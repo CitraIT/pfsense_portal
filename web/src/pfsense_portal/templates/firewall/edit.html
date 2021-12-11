@@ -1,0 +1,40 @@
+{% extends 'template.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block customheaders %}
+{% endblock %}
+
+{% block pagetitle %} Editar firewall {{ firewall.name }} {% endblock %}
+
+{% block content %}
+
+{% if submitted %}
+    <div class="card">
+        <div class="card-body bg-light">
+
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+               Firewall {{ firewall.name }} atualizado com sucesso!
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+<h3>Editar Firewall</h3>
+<br/><br/>
+<div id="firewall-form-container" class="col-6">
+    <form action="" method="POST" novalidate>
+        {{ form|crispy }}
+        {% csrf_token %}
+        <td><input type="submit" value="Atualizar" class="btn btn-primary"></td>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block customscripts %}
+{% endblock %}

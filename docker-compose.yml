@@ -1,0 +1,21 @@
+version: "2.0"
+
+services:
+  web:
+    build: web
+    container_name: fwportal
+    image: ${CI_REGISTRY_IMAGE}/${CI_PROJECT_NAME}:latest
+    restart: always
+    volumes:
+      - portalfw-backup-files:/app/files/backup
+
+  nginx:
+      build: nginx
+      container_name: fwportal_nginx
+      restart: always
+      ports:
+        - 8001:80
+
+
+volumes:
+  portalfw-backup-files:
