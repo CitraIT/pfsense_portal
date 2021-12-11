@@ -18,10 +18,10 @@ def index(request):
     try:
         policy = BackupPolicy.objects.get(id=1)
     except BackupPolicy.DoesNotExist:
-        policy = BackupPolicy(name='default policy', run_hour=20, run_minutes=00)
+        policy = BackupPolicy(name='default policy', run_hour=20, run_minute=30)
         policy.save()
     
-    backups = Backup.objects.order_by("-start_date")[:30]
+    backups = Backup.objects.order_by("-start_date")
     return render(request, 'backup/index.html', context={'policies': [policy, ], 'backups':backups})
 
 

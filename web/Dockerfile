@@ -11,18 +11,18 @@ RUN echo $TZ > /etc/timezone
 
 # Atualizando a lista de pacotes
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get -y update \
-        && apt-get -y dist-upgrade \
-        && apt-get -y install --no-install-recommends \
-                python3.8 \
-                python3-pip \
-                python3-psycopg2 \
-        python3.8-dev \
-        build-essential \
-                cron \
-                iputils-ping \
-                net-tools \
-                dnsutils 
+RUN apt-get -y update >/dev/null \
+	&& apt-get -y dist-upgrade >/dev/null \
+	&& apt-get -y install --no-install-recommends \
+		python3.8 \
+		python3-pip \
+		python3-psycopg2 \
+		python3.8-dev \
+		build-essential \
+		cron \
+		iputils-ping \
+		net-tools \
+		dnsutils >/dev/null 2>&1
 
 # CRON SETUP
 RUN mkdir -p /var/spool/cron/crontabs
@@ -33,11 +33,11 @@ RUN /usr/bin/crontab /var/spool/cron/crontabs/root
 
 # Installing Python Requirements
 COPY src/pfsense_portal/requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install -r /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt >/dev/null
 
 
 # gunicorn WSGI
-# RUN python3.8 -m pip install gunicorn
+RUN python3.8 -m pip install gunicorn
 
 
 # Cleanup package cache data
@@ -52,6 +52,7 @@ COPY src/pfsense_portal/ /app
 WORKDIR /app
 
 # Executable files
+RUN chmod +x /app/scheduled_tasks_runner.py
 # RUN chmod +x /scripts/*
 # RUN chmod +x /app/backup_runner.py
 

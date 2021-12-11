@@ -8,6 +8,13 @@ from django.utils import timezone
 from firewall.models import Firewall
 
 
+#
+BACKUP_RECURRENCE = [
+    ('DAILY', 'daily'),
+    ('HOURLY', 'hourly'),
+    ('WEEKLY', 'weekly'),
+    ('MONTLY', 'montly')
+]
 
 #
 #
@@ -33,7 +40,8 @@ class Backup(models.Model):
 class BackupPolicy(models.Model):
     name        = models.CharField(max_length=40, default='default policy')
     run_hour    = models.IntegerField(default=20)
-    run_minutes = models.IntegerField(default=0)
+    run_minute = models.IntegerField(default=0)
+    run_cycle   = models.CharField(max_length=10, choices=BACKUP_RECURRENCE, default='daily')
     last_run    = models.DateTimeField(null=True, blank=True)
 
 

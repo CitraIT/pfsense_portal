@@ -5,5 +5,5 @@
 # Environment Variables necessary to run the Scan Scheduler script
 #
 PATH=/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app
-*/30 * * * * /usr/bin/python3 /app/backup_runner.py
+* * * * * cd /app && /usr/bin/python3 /app/scheduled_tasks_runner.py
 

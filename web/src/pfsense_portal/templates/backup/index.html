@@ -22,7 +22,7 @@
         {% for policy in policies %}
         <tr>
             <td>{{ policy.name }}</td>
-            <td>{{ policy.run_hour }}:{{ policy.run_minutes|stringformat:"02d" }}</td>
+            <td>{{ policy.run_hour }}:{{ policy.run_minute|stringformat:"02d" }}</td>
             <td>{{ policy.last_run }}</td>
             <td><a href='#'><i class="fas fa-edit" title="Modificar"></i></a> <a href='/backup/policy/{{ policy.id }}/run' target="_blank"><i class="fas fa-play" title="Executar agora"></i></a></td>
         </tr>

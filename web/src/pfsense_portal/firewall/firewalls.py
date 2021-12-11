@@ -57,7 +57,7 @@ class PFSense:
             pass
     
     
-    def backup_config(self, path=None):
+    def backup_config(self, basepath='/app'):
         """
         
         """
@@ -74,13 +74,9 @@ class PFSense:
 
         req = self.http_session.post(self.url + "/diag_backup.php", data=form_data, verify=False)
         if req.ok:
-            # get filename
+            # get filename - last part of url query string
             filename = req.headers['Content-Disposition'].split("=")[-1]
-            #save file
-            if path is not None:
-                output_file_path = path
-            else:
-                output_file_path = Path( os.curdir ).resolve().joinpath("files/backup/" + filename)
+            output_file_path = Path( basepath ).resolve().joinpath("files/backup/" + filename)
             f = open(output_file_path, "w+")
             f.write(req.text)
             f.close()
