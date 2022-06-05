@@ -30,9 +30,10 @@
             <td>Ok</td>
            <!--<td><a href=''>Gerenciar</a> || <a href='{{ firewall.url }}' target="_blank">Acessar</a></td>-->
             <td>
-                <a href='/firewall/{{firewall.id}}/manage'><i class="far fa-arrow-alt-circle-right" title="Gerenciar"></i></a> 
+                <a href='javascript:window.open("http://"+window.location.hostname+":"+{{firewall.user_reverse_port}}, "_blank")'><i class="far fa-arrow-alt-circle-right" title="Gerenciar"></i></a> 
                 <a href='/firewall/{{firewall.id}}/edit' target="_blank"><i class="far fa-edit" title="Editar"></i></a>
                 <a href='/firewall/{{firewall.id}}/delete' ><i class="fas fa-trash-alt" title="Remover"></i></a>
+				<!-- :{{firewall.user_reverse_port}} -->
 
             </td>
         </tr>
