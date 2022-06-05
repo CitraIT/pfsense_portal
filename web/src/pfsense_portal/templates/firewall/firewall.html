@@ -30,7 +30,7 @@
             <td>Ok</td>
            <!--<td><a href=''>Gerenciar</a> || <a href='{{ firewall.url }}' target="_blank">Acessar</a></td>-->
             <td>
-                <a href='javascript:window.open("http://"+window.location.hostname+":"+{{firewall.user_reverse_port}}, "_blank")'><i class="far fa-arrow-alt-circle-right" title="Gerenciar"></i></a> 
+                <a href='javascript:openNewTab("https://"+window.location.hostname+":"+{{firewall.user_reverse_port}})'><i class="far fa-arrow-alt-circle-right" title="Gerenciar"></i></a> 
                 <a href='/firewall/{{firewall.id}}/edit' target="_blank"><i class="far fa-edit" title="Editar"></i></a>
                 <a href='/firewall/{{firewall.id}}/delete' ><i class="fas fa-trash-alt" title="Remover"></i></a>
 				<!-- :{{firewall.user_reverse_port}} -->
@@ -44,11 +44,16 @@
 </table>
 <script>
     document.addEventListener("DOMContentLoaded", ()=>{
-        // $("#table-list-firewall").DataTable({
-        //     searching: false,
-        //     lengthChange: false
-        // });
+         $("#table-list-firewall").DataTable({
+             searching: false,
+             lengthChange: false
+         });
     });
+	
+	function openNewTab(url)
+	{
+		var newWindow = window.open(url, '_blank');
+	}
 </script>
 {% endblock %}
 

@@ -1,8 +1,3 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
-from .models import Firewall
-from .forms import FirewallForm
 import json
 import random
 from threading import Thread
@@ -10,6 +5,14 @@ import socket
 import sys
 import ipdb
 from select import select
+import ssl
+import os
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
+from .models import Firewall
+from .forms import FirewallForm
+
 
 
 SOCKET_BIND_ADDR = '0.0.0.0'
@@ -106,6 +109,13 @@ def connect_firewall(request, api_key):
 #
 #
 def start_new_proxy_thread(api_key, port):
+    # ssl context for secure connection between the proxy and the firewall endpoint
+    proxy_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    
+    print(f'trying to load reverse_endpoint certificate and private key from dir')
+    print(os.path.realpath(os.curdir))
+    proxy_ctx.load_cert_chain('reverse_endpoint.pem', 'reverse_endpoint.key')
+    
     firewall = Firewall.objects.get(api_key=api_key)
     
     # setup connection from remote firewall
@@ -113,25 +123,49 @@ def start_new_proxy_thread(api_key, port):
     proxy_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     proxy_socket.bind((SOCKET_BIND_ADDR, port))
     proxy_socket.listen(10)
+    proxy_socket_secure = proxy_ctx.wrap_socket(proxy_socket, server_side=True)
+    
     print(f'waiting for firewall connection on {SOCKET_BIND_ADDR}:{port}...')
-    firewall_endpoint, firewall_addr = proxy_socket.accept()
+    firewall_endpoint, firewall_addr = proxy_socket_secure.accept()
     print(f'[proxy] firewall successfully connected  from {firewall_endpoint.getpeername()}')
     
     # wait connecton from remote user
+    user_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    user_ctx.verify_mode = ssl.CERT_NONE
+    print(f'trying to load reverse_proxy certificate and private key from dir')
+    print(os.path.realpath(os.curdir))
+    user_ctx.load_cert_chain('reverse_proxy.pem', 'reverse_proxy.key')
+    # user_ctx.load_cert_chain('reverse_proxy.pem')
+    
     user_port = firewall.user_reverse_port
     user_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    user_socket.bind((SOCKET_BIND_ADDR, user_port))
-    user_socket.listen()
+    secure_user_socket = user_ctx.wrap_socket(user_socket, server_side=True)
+    #user_socket.bind((SOCKET_BIND_ADDR, user_port))
+    #user_socket.listen()
+    secure_user_socket.bind((SOCKET_BIND_ADDR, user_port))
+    secure_user_socket.listen()
     print(f'waiting for user connection on http://{SOCKET_BIND_ADDR}:{user_port}...')
     
     while True:
         # parse user browser request
-        browser_endpoint, browser_addr = user_socket.accept()
-        browser_request = browser_endpoint.recv(8192)
-        if not browser_request:
-            print(f'empty request... skipping it')
-            browser_endpoint.close()
+        try:
+            browser_endpoint, browser_addr = secure_user_socket.accept()
+            browser_request = browser_endpoint.recv(8192)
+        except ssl.SSLError:
+            print('SSL Error. probably the client does not trust our self signed certificate yet...')
             continue
+        except ConnectionAbortedError:
+            print(f'browser request aborted...')
+            continue
+            #browser_endpoint.close()
+        except OSError:
+            print(f'OSError...')
+            continue
+        else:
+            if not browser_request:
+                print(f'empty request... skipping it')
+                browser_endpoint.close()
+                continue
         
         
         request_header_end_index = browser_request.index(b'\r\n\r\n')
@@ -156,7 +190,10 @@ def start_new_proxy_thread(api_key, port):
         firewall_endpoint.sendall(browser_request)
         
         # parsing response heades:
+        #try:
         firewall_response = firewall_endpoint.recv(8192)
+        #except OSError:
+        #    print(f'oserror at reading data from firewall endpoint')
         print(f'debug firewall response')
         print(firewall_response[:100])
         if not firewall_response:
@@ -189,6 +226,11 @@ def start_new_proxy_thread(api_key, port):
         for header_line in firewall_headers_txt.split(b'\r\n'):
             header_name, header_value = [ header_line[:header_line.index(b':')].decode(), header_line[header_line.index(b':')+1:].decode()  ]
             response_headers[header_name] = header_value.strip()
+        
+        # patch keep alive
+        if not 'Connection' in response_headers:
+            response_headers['Connection'] = 'close'
+            print(f'patched CONNECTION header')
         #print(f'----- debug response headers: ----')
         #print(response_headers)
         #print(f'received content-length: {response_headers["Content-Length"]}')

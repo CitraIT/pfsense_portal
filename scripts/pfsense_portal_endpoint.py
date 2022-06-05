@@ -5,11 +5,12 @@ import socket
 import json
 from select import select
 import requests
+import ssl
 #import ipdb
 
 #LOCAL_ENDPOINT_ADDR = '127.0.0.1'
 LOCAL_ENDPOINT_ADDR = '127.0.0.1'
-LOCAL_ENDPOINT_PORT = 8008
+LOCAL_ENDPOINT_PORT = 8000
 server_address = '192.168.0.175'
 server_port = 8000
 
@@ -34,12 +35,17 @@ if __name__ == "__main__":
         sys.exit(2)
 
 
-
     # connecting to reverse proxy if we shall proceed
     proxy_port = int(server_data["proxy_port"])
     print(f'connecting with proxy {server_address} on proxy port {proxy_port}')
+    
+    # setup ssl secure context
+    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    sslctx.check_hostname = False
+    sslctx.verify_mode = ssl.CERT_NONE
     proxy_endpoint = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    proxy_endpoint.connect((server_address, proxy_port))
+    secure_proxy_endpoint = sslctx.wrap_socket(proxy_endpoint, server_hostname="localhost")
+    secure_proxy_endpoint.connect((server_address, proxy_port))
 
 
     # waiting for new requests to pass to real firewall
@@ -47,9 +53,12 @@ if __name__ == "__main__":
         print(f'waiting for new proxy requests arrive...')
         # parse http request from proxy request
         # parse initial browser request
-        browser_request = proxy_endpoint.recv(8192)
+        browser_request = secure_proxy_endpoint.recv(8192)    
         if not browser_request:
-            continue
+            print(f'broken socket detected. stopping')
+            secure_proxy_endpoint.close()
+            sys.exit(0)
+            
         request_header_end_index = browser_request.index(b'\r\n\r\n')
         request_headers_txt = browser_request[:request_header_end_index]
         request_body_txt    = browser_request[request_header_end_index+4:]
@@ -71,7 +80,7 @@ if __name__ == "__main__":
         if request_method == b'POST':
             while len(request_body_txt) < int(request_headers["Content-Length"]):
                 print(f'response body less than content-length. waiting next chuck')
-                request_body_txt += proxy_endpoint.recv(8192)
+                request_body_txt += secure_proxy_endpoint.recv(8192)
                 print(f'chunk received')
 
 
@@ -107,6 +116,6 @@ if __name__ == "__main__":
         response += req.content
         print(f'sending back:')
         print(response)
-        proxy_endpoint.sendall(response)
+        secure_proxy_endpoint.sendall(response)
         print(f'sent')
 
