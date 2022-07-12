@@ -1,5 +1,6 @@
 from django import forms
 from .models import Firewall
+#from customer.models import Customer
 
 
 class FirewallForm(forms.ModelForm):
@@ -10,8 +11,6 @@ class FirewallForm(forms.ModelForm):
         fields = '__all__'
         labels = {
             'name': 'Nome',
-            'url': 'URL',
-            'admin_user': 'Admin User',
-            'admin_pass': 'Admin Password'
+            'api_key': 'API Key',
         }
     

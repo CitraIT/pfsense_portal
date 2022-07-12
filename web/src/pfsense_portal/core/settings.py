@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'firewall.apps.FirewallConfig',
     'backup.apps.BackupConfig',
+    'customer.apps.CustomerConfig',
     'crispy_forms'
 ]
 

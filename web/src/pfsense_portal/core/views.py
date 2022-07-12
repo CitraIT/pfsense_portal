@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from .forms import LoginForm
@@ -37,4 +37,8 @@ def login(request):
 
 
 
-
+# Logout
+@login_required
+def logout_user(request):
+    logout(request)
+    return redirect("/")

@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .views import index, dashboard
-from .views import login
+from .views import login, logout_user
 from django.contrib.auth.views import LoginView
 
 urlpatterns = [
@@ -28,4 +28,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('firewall/', include('firewall.urls')),
     path('backup/', include('backup.urls')),
+    path('logout/', logout_user, name='logout'),
 ]
