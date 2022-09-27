@@ -91,132 +91,17 @@ def connect_firewall(request, api_key):
     print(f'firewall have name of {firewall.name}')
     # TODO: make random port not conflict with others in use
     #port = 45000
-    port = random.choice([x for x in range(44000, 45000)])
-    #user_reverse_port = random.choice([x for x in range(44000, 45000)])
-    #firewall.user_reverse_port = user_reverse_port
+    # port = random.choice([x for x in range(5000, 6000)])
+    fw_next_port = random.choice(range(5000, 6000))
+    firewall.user_reverse_port = random.choice(range(5000, 6000))
 
-    firewall.control_channel_port = port
     firewall.save()
     # 
-    t = Thread(target=start_new_proxy_thread, args=(api_key, port), daemon=True)
+    t = Thread(target=start_new_proxy_thread, args=(api_key, fw_next_port), daemon=True)
     #t = Thread(target=start_new_control_channel, args=(api_key, port), daemon=True)
     t.start()
-    resp = {'authorization': 'ok', 'control_port': port}
+    resp = {'authorization': 'ok', 'control_port': fw_next_port}
     return HttpResponse(json.dumps(resp))
-
-
-
-# start_new_control_channel
-# starts a new socket (control channel) with the remote firewall agent
-# its used to send commands from the portal app to the firewall agent
-def start_new_control_channel(api_key, port):
-    firewall = Firewall.objects.get(api_key=api_key)
-    print(f'starting a new control channel for firewall {firewall.name}')
-    # ssl context for secure connection between the proxy and the firewall endpoint
-    control_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-
-    print(f'trying to load reverse_endpoint certificate and private key from dir')
-    control_ctx.load_cert_chain('reverse_endpoint.pem', 'reverse_endpoint.key')
-
-    # setup connection to remote firewall endpoint
-    control_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    control_socket.bind((SOCKET_BIND_ADDR, port))
-    control_socket.listen(10)
-    control_socket_secure = control_ctx.wrap_socket(control_socket, server_side=True)
-    print(f'waiting for firewall control connection on {SOCKET_BIND_ADDR}:{port}...')
-    firewall_endpoint, firewall_addr = control_socket_secure.accept()
-    print(f'[proxy] firewall successfully connected  from {firewall_endpoint.getpeername()}')
-
-    # open a local socket to wait for local commands to send to this firewall
-    # see a list if example commands bellow.
-    local_command_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # local_port = random.choice([x for x in range(45000, 46000)])
-    local_port = 45256
-    print(f'local port for control channel: {local_port}')
-    local_command_socket.bind(('127.0.0.1', local_port))
-    local_command_socket.listen()
-    firewall.local_command_port = local_port
-    firewall.save()
-
-    while True:
-        try:
-            print(f'waiting for new local control channel connection...')
-            local_socket, _ = local_command_socket.accept()
-            print(f'connection received')
-            request = local_socket.recv(8196)
-            print(f'request receiving from local control channel')
-            print(request)
-            firewall_endpoint.sendall(request)
-            print(f'data sent though remote control channel')
-            response = firewall_endpoint.recv(8196)
-            print(f'data recvd from remote control channel')
-            print(response)
-            local_socket.sendall(response)
-            print(f'data sent to local control channel')
-            # local_socket.close()
-        except:
-            print(f'exception in socket send/receive')
-            firewall_endpoint.close()
-            break
-        # finally:
-        #     local_socket.close()
-    """
-    //TODO
-    // TESTAR USUÁRIO CLICAR EM GERENCIAR O Firewall
-    // VAI CHAMAR VIEW QUE VAI ENVIAR COMANDO PARA O SOCKET LOCAL
-    // QUE VAI CHEGAR NA THREAD OUVINDO NA PORTA LOCAL
-    // QUE VAI ENVIAR COMANDO PARA O FIREWALL REMOTO
-    // QUE VAI CONECTAR EM OUTRA PORTA LOCAL
-    // ESTA OUTRA PORTA LOCAL VAI EXECUTAR O PROXY DAS CONEXÕES
-    // QUE VAI FAZER UM TUNEL DIRETO ENTRE O USUÁRIO E O FIREWALL REMOTO (webgui)
-    """
-
-    # sending test commands:
-    # print(f'sending test commands...')
-    # print(f'sending `ping` command')
-    # ping_command = {'op': 'ping', 'payload': 'ping'}
-    # firewall_endpoint.sendall(json.dumps(ping_command).encode('utf-8'))
-    # print(f'sent: {ping_command}')
-    # print(f'waiting for command response...')
-    # response = firewall_endpoint.recv(8196)
-    # print(f'received response: ')
-    # print(response.decode())
-
-    # sending quit command
-    # print(f'sending quit command:')
-    # quit_command = {'op': 'quit', 'payload': 'shutdown please...'}
-    # firewall_endpoint.sendall(json.dumps(quit_command).encode('utf-8'))
-    # print(f'sent: {quit_command}')
-    # print(f'waiting for response...')
-    # response = firewall_endpoint.recv(8196)
-    # print(f'received response...')
-    # print(response.decode())
-    # firewall_endpoint.close()
-
-    # # sending getHostname command
-    # print(f'sending command: getHostname')
-    # getHostname_command = {'op': 'getHostname', 'payload': ''}
-    # firewall_endpoint.sendall(json.dumps(getHostname_command).encode('utf-8'))
-    # print(f'sent: {getHostname_command}')
-    # print(f'waiting for response...')
-    # response = firewall_endpoint.recv(8196)
-    # print(f'received response...')
-    # print(response.decode())
-    # #firewall_endpoint.close()
-    #
-    # # sending quit command
-    # print(f'sending quit command:')
-    # quit_command = {'op': 'quit', 'payload': 'shutdown please...'}
-    # firewall_endpoint.sendall(json.dumps(quit_command).encode('utf-8'))
-    # print(f'sent: {quit_command}')
-    # print(f'waiting for response...')
-    # response = firewall_endpoint.recv(8196)
-    # print(f'received response...')
-    # print(response.decode())
-    # firewall_endpoint.close()
-    # return
-
-
 
 
 

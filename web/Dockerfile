@@ -18,17 +18,7 @@ RUN apt-get -y update >/dev/null \
 		python3-pip \
 		python3-psycopg2 \
 		python3.8-dev \
-		build-essential \
-		cron \
-		iputils-ping \
-		net-tools \
-		dnsutils >/dev/null 2>&1
-
-# CRON SETUP
-RUN mkdir -p /var/spool/cron/crontabs
-COPY crontabs/root /var/spool/cron/crontabs/root
-RUN chmod 0644 /var/spool/cron/crontabs/root
-RUN /usr/bin/crontab /var/spool/cron/crontabs/root
+		build-essential >/dev/null 2>&1
 
 
 # Installing Python Requirements
@@ -51,20 +41,10 @@ COPY scripts/ /scripts
 COPY src/pfsense_portal/ /app
 WORKDIR /app
 
-# Executable files
-RUN chmod +x /app/scheduled_tasks_runner.py
-# RUN chmod +x /scripts/*
-# RUN chmod +x /app/backup_runner.py
 
-
-# Expondo a porta 8000
+# Expondo a porta 80
 EXPOSE 80
 
-
-# Definindo o gunicorn como ponto de entrada
-# ENTRYPOINT [ "gunicorn", "--workers=5", "--threads=2", "--worker-class=gthread","--bind", "0.0.0.0:80", "--worker-tmp-dir","/dev/shm", "core.wsgi"]
-#ENTRYPOINT [ "python3.8", "app.py"]
-VOLUME /app
 
 # Default Entrypoint
 RUN chmod +x /scripts/entrypoint.sh
