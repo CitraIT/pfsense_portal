@@ -1,4 +1,5 @@
 #!/usr/local/bin/python3.8
+import os
 import subprocess
 import sys
 import socket
@@ -18,11 +19,11 @@ LOCAL_ENDPOINT_PORT = 8010
 
 # proxy server where to connect and receive requests
 SERVER_SCHEMA = 'http'
-SERVER_ADDRESS = '127.0.0.1'
-SERVER_PORT = 8000
+SERVER_ADDRESS = '192.168.0.188'
+SERVER_PORT = 8001
 
 customer_data = {
-        "api_key": "7bc78c36ae22432faa1eb1a13eb354b5"
+        "api_key": "13f6fc52a95b4edd9432abebf351bf1d"
 }
 
 
@@ -50,17 +51,18 @@ if __name__ == "__main__":
         print(f'requesting firewall registration on proxy')
         try:
             req = requests.get(f'{SERVER_SCHEMA}://{SERVER_ADDRESS}:{SERVER_PORT}/firewall/connect/{customer_data["api_key"]}')
-        except [NewConnectionError, ConnectionError]:
+        except [NewConnectionError]:
             print(f'connection error with {SERVER_ADDRESS}:{SERVER_PORT}')
             continue
         else:
             print(f'requesting firewall registration on proxy done!')
 
         # parsing result
-        server_data = json.loads(req.text)
-        if (server_data["authorization"]) == "ok":
-            print(f'authorization ok.')
-        else:
+        try:
+            server_data = json.loads(req.text)
+            if (server_data["authorization"]) == "ok":
+                print(f'authorization ok.')
+        except:
             print(f'authorization error! check with support!')
             sys.exit(2)
 

@@ -3,7 +3,6 @@ import random
 from threading import Thread
 import socket
 import sys
-import ipdb
 from select import select
 import ssl
 import os
@@ -92,9 +91,11 @@ def connect_firewall(request, api_key):
     # TODO: make random port not conflict with others in use
     #port = 45000
     # port = random.choice([x for x in range(5000, 6000)])
-    fw_next_port = random.choice(range(5000, 6000))
-    firewall.user_reverse_port = random.choice(range(5000, 6000))
-
+    fw_next_port = random.choice(range(5000, 5010))
+    firewall.user_reverse_port = random.choice(range(5000, 5100))
+    while fw_next_port == firewall.user_reverse_port:
+        firewall.user_reverse_port = random.choice(range(5000, 5100))
+      
     firewall.save()
     # 
     t = Thread(target=start_new_proxy_thread, args=(api_key, fw_next_port), daemon=True)

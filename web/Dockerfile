@@ -34,6 +34,9 @@ RUN python3.8 -m pip install gunicorn
 RUN rm -rf /var/lib/apt/lists/*
 
 
+# Adjusting ssl weak cipher acceptance
+COPY ssl/openssl.cnf /etc/ssl/openssl.cnf
+
 # Copiando os arquivos da aplicação
 RUN mkdir /app
 RUN mkdir /scripts
@@ -44,6 +47,7 @@ WORKDIR /app
 
 # Expondo a porta 80
 EXPOSE 80
+EXPOSE 5000-5100
 
 
 # Default Entrypoint
